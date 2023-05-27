@@ -15,8 +15,82 @@
 #define DEFAULT_BUFLEN 512
 #define PORT xxxx
 
+
+
+void system_execution(int fd){
               #define STRECOM(a,b, c)     (strncmp(a, b, c) == 0)
 	          #define BUF_SIZE        4096
+			  
+           char buffer[BUF_SIZE], bufferout[BUF_SIZE];
+           int logged = 0;
+	       char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
+	       int  recvbuflen = DEFAULT_BUFLEN;
+	
+     // Receive until the peer shuts down the coonection
+    do {
+        // Clear Receive buffer
+        memset( &recvbuf, '\0', sizeof(recvbuf) );
+        rcnt = recv(fd, recvbuf, recvbuflen, 0);
+        if (rcnt > 0) {
+            printf("Bytes received: %d\n", rcnt);
+
+        // Echo the buffer back to the sender
+        rcnt = send( fd, recvbuf, rcnt, 0 );
+            if (rcnt < 0) {
+                printf("Send failed:\n");
+                close(fd);
+                break;
+            }
+            printf("Bytes sent: %d\n", rcnt);
+			
+			if(logged==1){
+				
+				if(STRECOM(recvbuf, "LIST", strlen("LIST")))
+				{
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "LIST");//
+					send(fd, bufferout, strlen(bufferout), 0);
+				}
+				else if(STRECOM(recvbuf, "GET", strlen("GET")))
+				{
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "GET");//
+					send(fd, bufferout, strlen(bufferout), 0);
+				}
+				else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
+				{
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "DEL");//
+					send(fd, bufferout, strlen(bufferout), 0);
+				}
+				else if(STRECOM(recvbuf, "QUIT", strlen("QUIT")))
+				{
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "QUIT");//
+					send(fd, bufferout, strlen(bufferout), 0);
+				}
+				else{  
+					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
+                }      
+		       else{  
+				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "USER");//
+					send(fd, bufferout, strlen(bufferout), 0);
+					logged=1;
+				}
+				else{
+					send(fd, "the syntax is USER follow by your name space and passwork 'USER test password' \n", 
+					strlen( "the syntax is USER follow by your name space and passwork 'USER test password' \n"), 0);
+				}
+			}
+		
+		
+			
+			else if (rcnt == 0)
+            printf("Connection closing...\n");
+        else  {
+            printf("Receive failed:\n");
+            close(fd);
+            break;
+        }
+    } while (rcnt > 0);
+			  
 int main(int argc, char *argv[])
 {
 	int server, client;
@@ -28,6 +102,7 @@ int main(int argc, char *argv[])
 	char *password=NULL;
 	int cport;
 	int rcnt;
+	pid_t pid;
 
 
 	if(argc < 3){
@@ -104,80 +179,15 @@ while(1) {  // main accept() loop
 
     printf("Server: got connection from %s\n", \
             inet_ntoa(remote_addr.sin_addr));
-			
-			
+		if ((pid=fork()) == 0) {
+			close(server);
+			system_execution(fd);
+			printf("Child finished their job!\n");
+			close(fd);
+			exit(0);
+	}
 
-           char buffer[BUF_SIZE], bufferout[BUF_SIZE];
-           int logged = 0;
-	       char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
-	       int  recvbuflen = DEFAULT_BUFLEN;
 	
-     // Receive until the peer shuts down the coonection
-    do {
-        // Clear Receive buffer
-        memset( &recvbuf, '\0', sizeof(recvbuf) );
-        rcnt = recv(fd, recvbuf, recvbuflen, 0);
-        if (rcnt > 0) {
-            printf("Bytes received: %d\n", rcnt);
-
-        // Echo the buffer back to the sender
-        rcnt = send( fd, recvbuf, rcnt, 0 );
-            if (rcnt < 0) {
-                printf("Send failed:\n");
-                close(fd);
-                break;
-            }
-            printf("Bytes sent: %d\n", rcnt);
-			
-			if(logged==1){
-				
-				if(STRECOM(recvbuf, "LIST", strlen("LIST")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "LIST");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else if(STRECOM(recvbuf, "GET", strlen("GET")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "GET");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "DEL");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else if(STRECOM(recvbuf, "QUIT", strlen("QUIT")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "QUIT");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else{  
-					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
-                }      
-		       else{  
-				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "USER");//
-					send(fd, bufferout, strlen(bufferout), 0);
-					logged=1;
-				}
-				else{
-					send(fd, "the syntax is USER follow by your name space and passwork 'USER test password' \n", 
-					strlen( "the syntax is USER follow by your name space and passwork 'USER test password' \n"), 0);
-				}
-			}
-		
-		
-		
-		
-		
-			else if (rcnt == 0)
-            printf("Connection closing...\n");
-        else  {
-            printf("Receive failed:\n");
-            close(fd);
-            break;
-        }
-    } while (rcnt > 0);
 
 
 
