@@ -111,7 +111,7 @@ while(1) {  // main accept() loop
 	       char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
 	       int  recvbuflen = DEFAULT_BUFLEN;
 	
-    
+     // Receive until the peer shuts down the coonection
     do {
         // Clear Receive buffer
         memset( &recvbuf, '\0', sizeof(recvbuf) );
@@ -152,7 +152,21 @@ while(1) {  // main accept() loop
 				}
 				else{  
 					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
-        } else if (rcnt == 0)
+        }      
+		     }else{
+				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
+					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "USER");//
+					send(fd, bufferout, strlen(bufferout), 0);
+					logged=1;
+				}
+				else{
+					send(fd, "the syntax is USER follow by your name space and passwork 'USER test password' \n", 
+					strlen( "the syntax is USER follow by your name space and passwork 'USER test password' \n"), 0);
+
+				}
+			}
+		
+		else if (rcnt == 0)
             printf("Connection closing...\n");
         else  {
             printf("Receive failed:\n");
