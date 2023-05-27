@@ -13,7 +13,7 @@
 
 /* Definitions */
 #define DEFAULT_BUFLEN 512
-#define PORT xxxc
+#define PORT xxxx
 
               #define STRECOM(a,b, c)     (strncmp(a, b, c) == 0)
 	          #define BUF_SIZE        4096
@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 	char *folder=NULL;
 	char *password=NULL;
 	int cport;
+	int rcnt;
 
 
 	if(argc < 3){
@@ -152,8 +153,8 @@ while(1) {  // main accept() loop
 				}
 				else{  
 					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
-        }      
-		     }else{
+                }      
+		       else{  
 				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
 					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "USER");//
 					send(fd, bufferout, strlen(bufferout), 0);
@@ -162,11 +163,14 @@ while(1) {  // main accept() loop
 				else{
 					send(fd, "the syntax is USER follow by your name space and passwork 'USER test password' \n", 
 					strlen( "the syntax is USER follow by your name space and passwork 'USER test password' \n"), 0);
-
 				}
 			}
 		
-		else if (rcnt == 0)
+		
+		
+		
+		
+			else if (rcnt == 0)
             printf("Connection closing...\n");
         else  {
             printf("Receive failed:\n");
