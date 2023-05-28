@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <dirent.h>
 /* Socket API headers */
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -17,14 +17,29 @@
 
 
 
-void system_execution(int fd){
+void system_execution(int fd, char* folder){
               #define STRECOM(a,b, c)     (strncmp(a, b, c) == 0)
 	          #define BUF_SIZE        4096
 			  
+void removeSubstr (char *string, char *sub) {
+          char *match;
+          int len = strlen(sub);
+          while ((match = strstr(string, sub))) {
+           *match = '\0';
+           strcat(string, match+len);
+    }
+}
+		  
            char buffer[BUF_SIZE], bufferout[BUF_SIZE];
            int logged = 0;
 	       char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
 	       int  recvbuflen = DEFAULT_BUFLEN;
+		   int rcnt;
+		   
+		   char filename[100] ;
+           char folderfilename[300],  thetext[BUF_SIZE] ;
+	       FILE *ofp;
+	       int infile=0;
 	
      // Receive until the peer shuts down the coonection
     do {
