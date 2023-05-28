@@ -29,37 +29,20 @@ void removeSubstr (char *string, char *sub) {
            strcat(string, match+len);
     }
 }
-		  
-           char buffer[BUF_SIZE], bufferout[BUF_SIZE];
-           int logged = 0;
-	       char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
-	       int  recvbuflen = DEFAULT_BUFLEN;
-		   int rcnt;
-		   
-		   char filename[100] ;
-           char folderfilename[300],  thetext[BUF_SIZE] ;
-	       FILE *ofp;
-	       int infile=0;
-	
-     // Receive until the peer shuts down the coonection
+	char buffer[BUF_SIZE], bufferout[BUF_SIZE];
+	int logged = 0;
+	char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
+	int  recvbuflen = DEFAULT_BUFLEN;
+	int rcnt;
+
+    // Receive until the peer shuts down the connection
     do {
         // Clear Receive buffer
         memset( &recvbuf, '\0', sizeof(recvbuf) );
         rcnt = recv(fd, recvbuf, recvbuflen, 0);
         if (rcnt > 0) {
-            printf("Bytes received: %d\n", rcnt);
 
-        // Echo the buffer back to the sender
-        rcnt = send( fd, recvbuf, rcnt, 0 );
-            if (rcnt < 0) {
-                printf("Send failed:\n");
-                close(fd);
-                break;
-            }
-            printf("Bytes sent: %d\n", rcnt);
-			
 			if(logged==1){
-				
 				if(STRECOM(recvbuf, "LIST", strlen("LIST")))
 				{
 					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "LIST");//
@@ -82,8 +65,8 @@ void removeSubstr (char *string, char *sub) {
 				}
 				else{  
 					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
-                }      
-		       else{  
+				}
+			}else{
 				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
 					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "USER");//
 					send(fd, bufferout, strlen(bufferout), 0);
@@ -92,12 +75,12 @@ void removeSubstr (char *string, char *sub) {
 				else{
 					send(fd, "the syntax is USER follow by your name space and passwork 'USER test password' \n", 
 					strlen( "the syntax is USER follow by your name space and passwork 'USER test password' \n"), 0);
+
 				}
 			}
-		
-		
-			
-			else if (rcnt == 0)
+
+
+        } else if (rcnt == 0)
             printf("Connection closing...\n");
         else  {
             printf("Receive failed:\n");
@@ -105,6 +88,11 @@ void removeSubstr (char *string, char *sub) {
             break;
         }
     } while (rcnt > 0);
+
+
+}
+
+
 			  
 int main(int argc, char *argv[])
 {
