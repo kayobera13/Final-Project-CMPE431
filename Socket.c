@@ -43,28 +43,104 @@ void removeSubstr (char *string, char *sub) {
         if (rcnt > 0) {
 
 			if(logged==1){
-				if(STRECOM(recvbuf, "LIST", strlen("LIST")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "LIST");//
-					send(fd, bufferout, strlen(bufferout), 0);
+								if(infile == 0){
+					if(STRECOM(recvbuf, "LIST", strlen("LIST")))
+					{
+						//send(fd, folder, strlen(folder), 0);
+						 DIR *d;
+						  struct dirent *dir;
+						  d = opendir(folder);
+						  if (d) {
+							while ((dir = readdir(d)) != NULL) {
+							  sprintf(filename, "%s\n", dir->d_name);
+							  send(fd, filename, strlen(filename), 0);
+							}
+							closedir(d);
+						  }
+						//sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "LIST");//
+						send(fd, bufferout, strlen(bufferout), 0);
+					}
+					else if(STRECOM(recvbuf, "GET", strlen("GET")))
+					{
+
+						sprintf(filename,"%s",recvbuf);
+						removeSubstr(filename, "GET");//remove GET
+						removeSubstr(filename, " ");
+						removeSubstr(filename, "\n");//remove space
+
+						sprintf(folderfilename,"%s/%s", folder, filename);
+						//sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "GET");//
+						//send(fd, bufferout, strlen(bufferout), 0);
+						char ch;
+						char chr[3];
+						ofp = fopen(folderfilename, "r");
+
+						if (NULL == ofp) {
+							printf("file can't be opened \n");
+							sprintf(bufferout,"404 File %s not found\n", filename);//
+							send(fd, bufferout, strlen(bufferout), 0);
+
+						}else{
+							printf("file caN be opened \n");
+
+							do {
+								ch = fgetc(ofp);
+								sprintf(chr,"%c", ch);//
+								send(fd, chr, strlen(chr), 0);
+
+								printf("%c", ch);
+							} while (ch != EOF);
+
+							sprintf(chr,"\n");//
+
+							send(fd, chr, strlen(chr), 0);
+							fclose(ofp);
+						}
+
+						// Closing the file
+
+					}
+					else if(STRECOM(recvbuf, "PUT", strlen("PUT")))
+					{
+
+						sprintf(filename,"%s",recvbuf);
+						removeSubstr(filename, "PUT");//remove PUT
+						removeSubstr(filename, " ");
+						removeSubstr(filename, "\n");//remove space
+
+						sprintf(folderfilename,"%s/%s", folder, filename);
+						infile=1;
+
+						sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "PUT");//
+						send(fd, bufferout, strlen(bufferout), 0);
+					}
+					else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
+					{
+
+					   sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "DEL");//
+						send(fd, bufferout, strlen(bufferout), 0);
+					}
+					else if(STRECOM(recvbuf, "QUIT", strlen("QUIT")))
+					{
+						send(fd, "Goodbye!\n", strlen("Goodbye!\n"), 0);
+                        close(fd);
+
+					}
+					else
+					{  
+						send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
+					}
+				}else{
+					//printf("C%d: %s\n", fd, buffer);
+					strcat(thetext, recvbuf);
+					if (STRECOM(recvbuf, ".",1)) { // A single "." signifies the end
+                          ofp=fopen(folderfilename, "w");
+						  fprintf(ofp, "\r\n%s",thetext);
+						  fclose(ofp);
+                          infile = 0;
+                    }
 				}
-				else if(STRECOM(recvbuf, "GET", strlen("GET")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "GET");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "DEL");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else if(STRECOM(recvbuf, "QUIT", strlen("QUIT")))
-				{
-					sprintf(bufferout,"200 ,Hello %s , please to meet you\n", "QUIT");//
-					send(fd, bufferout, strlen(bufferout), 0);
-				}
-				else{  
-					send(fd, "Wrong command please start your text with: LIST, GET, DEL or QUIT\n", strlen( "Wrong command please start your text with: LIST, GET, DEL or QUIT\n"), 0);
+
 				}
 			}else{
 				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
@@ -184,7 +260,8 @@ while(1) {  // main accept() loop
             inet_ntoa(remote_addr.sin_addr));
 		if ((pid=fork()) == 0) {
 			close(server);
-			system_execution(fd);
+			system_execution(fd, folder);
+			
 			printf("Child finished their job!\n");
 			close(fd);
 			exit(0);
