@@ -60,7 +60,8 @@ void removeSubstr (char *string, char *sub) {
 						  d = opendir(folder);
 						  if (d) {
 							while ((dir = readdir(d)) != NULL) {
-							  sprintf(filename, "%s\n", dir->d_name);
+							  strncpy(filename, dir->d_name, sizeof(filename) - 1);
+                              filename[sizeof(filename) - 1] = '\0';  // Null-terminate the string
 							  send(fd, filename, strlen(filename), 0);
 							}
 							closedir(d);
@@ -71,7 +72,9 @@ void removeSubstr (char *string, char *sub) {
 					else if(STRECOM(recvbuf, "GET", strlen("GET")))
 					{
 
-						sprintf(filename,"%s",recvbuf);
+						strncpy(filename, recvbuf, sizeof(filename) - 1);
+                        filename[sizeof(filename) - 1] = '\0';  // Null-terminate the string
+
 						removeSubstr(filename, "GET");//remove GET
 						removeSubstr(filename, " ");
 						removeSubstr(filename, "\n");//remove space
@@ -111,7 +114,9 @@ void removeSubstr (char *string, char *sub) {
 					else if(STRECOM(recvbuf, "PUT", strlen("PUT")))
 					{
 
-						sprintf(filename,"%s",recvbuf);
+						strncpy(filename, recvbuf, sizeof(filename) - 1);
+                        filename[sizeof(filename) - 1] = '\0';  // Null-terminate the string
+
 						removeSubstr(filename, "PUT");//remove PUT
 						removeSubstr(filename, " ");
 						removeSubstr(filename, "\n");//remove space
@@ -125,7 +130,9 @@ void removeSubstr (char *string, char *sub) {
 					else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
 					{
 
-					 	sprintf(filename,"%s",recvbuf);
+					 	strncpy(filename, recvbuf, sizeof(filename) - 1);
+                        filename[sizeof(filename) - 1] = '\0';  // Null-terminate the string
+
 						removeSubstr(filename, "DEL");//remove DEL
 						removeSubstr(filename, " ");
 						removeSubstr(filename, "\n");//remove space
@@ -162,7 +169,9 @@ void removeSubstr (char *string, char *sub) {
 				}
 			}else{
 				if (STRECOM(recvbuf, "USER", strlen("USER"))) { // Initial greeting
-										sprintf(username,"%s",recvbuf);
+				    strncpy(filename, recvbuf, sizeof(filename) - 1);
+                    filename[sizeof(filename) - 1] = '\0';  // Null-terminate the string
+
 					removeSubstr(username, "USER");//remove GET
 					//removeSubstr(username, " ");
 					removeSubstr(username, "\n");//remove space
@@ -213,14 +222,14 @@ void removeSubstr (char *string, char *sub) {
 
 	
 	  
-	}//if (rcnt == 0)
+	//if (rcnt == 0)
             //printf("Connection closing...\n");
         //else  {
           //  printf("Receive failed:\n");
             //close(fd);
             //break;
         //}
-    } while (rcnt > 0);
+}//while (rcnt > 0);
 
 
 
@@ -335,4 +344,5 @@ while(1) {  // main accept() loop
 // Final Cleanup
 close(server);
 
+}
 }
