@@ -13,7 +13,7 @@
 
 /* Definitions */
 #define DEFAULT_BUFLEN 512
-#define PORT xxxx
+#define PORT 1888
 
 
 
@@ -229,13 +229,13 @@ void removeSubstr (char *string, char *sub) {
             //close(fd);
             //break;
         //}
-}//while (rcnt > 0);
+}while (rcnt > 0);
 
 
 
 
-
-			  
+}
+		  
 int main(int argc, char *argv[])
 {
 	int server, client;
@@ -344,5 +344,4 @@ while(1) {  // main accept() loop
 // Final Cleanup
 close(server);
 
-}
 }
