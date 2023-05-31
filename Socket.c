@@ -17,7 +17,7 @@
 
 
 
-void system_execution(int fd, char* folder){
+void system_execution(int fd, char* folder, char* passwordfile){
               #define STRECOM(a,b, c)     (strncmp(a, b, c) == 0)
 	          #define BUF_SIZE        4096
 			  
@@ -34,7 +34,7 @@ void removeSubstr (char *string, char *sub) {
 	char recvbuf[DEFAULT_BUFLEN],bmsg[DEFAULT_BUFLEN];
 	int  recvbuflen = DEFAULT_BUFLEN;
 	int rcnt;
-	char filename[100], username[100] ;
+	char filename[101], username[101] ;
 	char folderfilename[300],  thetext[BUF_SIZE] ;
 	 FILE *ofp;
 	 int infile=0;
@@ -47,7 +47,7 @@ void removeSubstr (char *string, char *sub) {
         if (rcnt > 0) {
                            if(STRECOM(recvbuf, "QUIT", strlen("QUIT")))
 			{
-				send(fd, "Goodbye!\n", strlen("Goodbye!\n"), 0);
+				send(fd, "Goodbye!\n", strlen("Good bye!\n"), 0);
                  close(fd);	
 			}
 			if(logged==1){
@@ -119,7 +119,7 @@ void removeSubstr (char *string, char *sub) {
 						sprintf(folderfilename,"%s/%s", folder, filename);
 						infile=1;
 
-						sprintf(bufferout,"200  %S file retrieved by server and was saved.\n", filename);//
+						sprintf(bufferout,"200  %s file retrieved by server and was saved.\n", filename);//
 						send(fd, bufferout, strlen(bufferout), 0);
 					}
 					else if(STRECOM(recvbuf, "DEL", strlen("DEL")))
@@ -180,7 +180,7 @@ void removeSubstr (char *string, char *sub) {
 					int bufferLength = 255;
 					char bufferLogin[bufferLength]; /* not ISO 90 compatible */
 
-					fileLogin = fopen("password.txt", "r");
+					fileLogin = fopen("passwordfile", "r");
 
 					while(fgets(bufferLogin, bufferLength, fileLogin)) {
 						printf("%s\n", bufferLogin);
@@ -211,18 +211,19 @@ void removeSubstr (char *string, char *sub) {
 				}
 			}
 
-
-        } else if (rcnt == 0)
-            printf("Connection closing...\n");
-        else  {
-            printf("Receive failed:\n");
-            close(fd);
-            break;
-        }
+	
+	  
+	}//if (rcnt == 0)
+            //printf("Connection closing...\n");
+        //else  {
+          //  printf("Receive failed:\n");
+            //close(fd);
+            //break;
+        //}
     } while (rcnt > 0);
 
 
-}
+
 
 
 			  
@@ -316,7 +317,7 @@ while(1) {  // main accept() loop
             inet_ntoa(remote_addr.sin_addr));
 		if ((pid=fork()) == 0) {
 			close(server);
-			system_execution(fd, folder);
+			system_execution(fd, folder,password);
 			
 			printf("Child finished their job!\n");
 			close(fd);
